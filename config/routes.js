@@ -37,6 +37,7 @@ module.exports.routes = {
   'post /post': 'PostController.createPost',
   'delete /post/:id': 'PostController.deletePost',
   'post /comment': 'CommentController.createComment',
+  'delete /comment/:id': 'CommentController.deleteComment',
   'post /login': 'UserController.login',
   'post /signup': 'UserController.signup',
   '/logout': 'UserController.logout'

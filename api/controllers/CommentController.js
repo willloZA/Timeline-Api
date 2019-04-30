@@ -36,6 +36,35 @@ module.exports = {
                 res.negotiate(err);
             });
     },
-	
+    
+    deleteComment: function (req, res) {
+        if (!req.isSocket) {
+            console.log('http rejected');
+            return res.badRequest();
+        }
+
+        Comment.findOne({ id:req.param('id') })
+            .then((comment) => {
+                if (comment.user === req.session.me) {
+                    Comment.destroy({ id:req.param('id') })
+                        .then((delComment) => {
+                            Post.publishRemove(delComment.post, 'comments', delComment.id, req);
+                            res.ok({ message: `post deleted`});
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            res.negotiate(err);
+                        });
+                        
+                } else {
+                    console.log(`${req.session.me} attempted to delete Comment ${req.param('id')} that isn't theirs`)
+                    res.forbidden({ message: `failed to delete Comment`});
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+                res.negotiate(err);
+            });
+    }
 };
 

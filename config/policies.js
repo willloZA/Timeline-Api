@@ -51,11 +51,13 @@ module.exports.policies = {
   
   PostController: {
     createPost: 'isLoggedIn',
+    deletePost: 'isLoggedIn',
     getPosts: true
   },
 
   CommentController: {
-    createComment: 'isLoggedIn'
+    createComment: 'isLoggedIn',
+    deleteComment: 'isLoggedIn'
   },
 
   UserController: {
