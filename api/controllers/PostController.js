@@ -65,8 +65,8 @@ module.exports = {
         }
 
         //test via policy if logged in and user id provided with post matches req.session id
-        if (req.params.id !== req.session.me) {
-            console.log(`${req.session.me} attempted to create post using user id ${req.params.id}`);
+        if (req.params.all().user !== req.session.me) {
+            console.log(`${req.session.me} attempted to create post using user id ${req.params.all().user}`);
                 res.forbidden({ message: 'create post failed: Incorrect user Id'});
         }
 
