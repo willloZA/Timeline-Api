@@ -14,8 +14,11 @@ module.exports = {
         }
 
         //test via policy if logged in and user id provided with post matches req.session id
-        
-        console.log('create comment: ' + req.params.all());
+        if (req.params.id !== req.session.me) {
+            console.log(`${req.session.me} attempted to create comment using user id ${req.params.id}`);
+                res.forbidden({ message: 'create comment failed: Incorrect user Id'});
+        }
+
         Comment.create(req.params.all())
             .then((newComment) => {
                 Comment.findOne({ id: newComment.id })
@@ -47,9 +50,12 @@ module.exports = {
             .then((comment) => {
                 if (comment.user === req.session.me) {
                     Comment.destroy({ id:req.param('id') })
-                        .then((delComment) => {
-                            Post.publishRemove(delComment.post, 'comments', delComment.id, req);
-                            res.ok({ message: `post deleted`});
+                        .then((delCommentArr) => {
+                            Post.publishRemove(delCommentArr[0].post, 'comments', delCommentArr[0].id, req);
+                            res.ok({ 
+                                post: delCommentArr[0].post,
+                                comment: delCommentArr[0].id,
+                                message: `comment deleted`});
                         })
                         .catch((err) => {
                             console.log(err);

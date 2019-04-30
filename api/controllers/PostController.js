@@ -58,14 +58,18 @@ module.exports = {
             });
     },
     createPost: function (req, res) {
+        console.log('post create: ', req.params.all());
         if (!req.isSocket) {
             console.log('http rejected');
             return res.badRequest();
         }
 
         //test via policy if logged in and user id provided with post matches req.session id
-        
-        console.log('create post: ' + req.params.all());
+        if (req.params.id !== req.session.me) {
+            console.log(`${req.session.me} attempted to create post using user id ${req.params.id}`);
+                res.forbidden({ message: 'create post failed: Incorrect user Id'});
+        }
+
         Post.create(req.params.all())
             .then((newPost) => {
                 Post.findOne({ id: newPost.id })
@@ -96,11 +100,12 @@ module.exports = {
             .then((post) => {
                 if (post.user === req.session.me) {
                     Post.destroy({ id:req.param('id') })
-                        .then((delPost) => {
-                            Post.publishDestroy(delPost.id, req);
-                            Comment.destroy({ post: delPost.id })
+                        .then((delPostArr) => {
+                            console.log(delPostArr);
+                            Post.publishDestroy(delPostArr[0].id, req);
+                            Comment.destroy({ post: delPostArr[0].id })
                                 .then((delCommentArr) => {
-                                    console.log(`Post ${delPost.id} and ${delCommentArr.length} comments deleted`);
+                                    console.log(`Post ${delPostArr[0].id} and ${delCommentArr.length} comments deleted`);
                                     res.ok({ message: `post and comments deleted`});
                                 })
                                 .catch((err) => {

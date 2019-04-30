@@ -367,7 +367,7 @@ var CommentFormComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<!-- <div class=\"card\">\n  <div class=\"card-body\">\n    <h4 class=\"card-title\">{{ comment.name + \":\"}}</h4>\n    <p class=\"card-text\"> {{ comment.contents }}</p>\n    <p>{{ comment.date | date:'d MMMM, h:mm a' }}</p>\n  </div>\n</div>\n -->\n\n<div class=\"comment\">\n  <!-- <a class=\"pull-left\" href=\"#\">\n    <img class=\"avatar\" src=\"https://bootdey.com/img/Content/user_3.jpg\" alt=\"avatar\">\n  </a> -->    <!-- implement profile pictures -->\n  <div class=\"comment-body\">\n    <div class=\"comment-heading\">\n      <h4 class=\"user\">{{ comment.user.firstName + ' ' + comment.user.lastName }}</h4>\n      <h5 class=\"time\">{{ comment.updatedAt | date:'d MMMM, h:mm a' }}</h5>\n    </div>\n    <p>{{ comment.message }}</p>\n  </div>\n</div>"
+module.exports = "<!-- <div class=\"card\">\n  <div class=\"card-body\">\n    <h4 class=\"card-title\">{{ comment.name + \":\"}}</h4>\n    <p class=\"card-text\"> {{ comment.contents }}</p>\n    <p>{{ comment.date | date:'d MMMM, h:mm a' }}</p>\n  </div>\n</div>\n -->\n\n<div class=\"comment\">\n  <!-- <a class=\"pull-left\" href=\"#\">\n    <img class=\"avatar\" src=\"https://bootdey.com/img/Content/user_3.jpg\" alt=\"avatar\">\n  </a> -->    <!-- implement profile pictures -->\n  <div class=\"comment-body\">\n    <div class=\"comment-heading\">\n      <h4 class=\"user\">{{ comment.user.firstName + ' ' + comment.user.lastName }}</h4>\n      <h5 class=\"time\">{{ comment.updatedAt | date:'d MMMM, h:mm a' }}</h5>\n      <button type=\"button\" class=\"close\" aria-label=\"Close\" (click)=\"deleteComment();\">\n        <span aria-hidden=\"true\">&times;</span>\n      </button>\n    </div>\n    <p>{{ comment.message }}</p>\n  </div>\n</div>"
 
 /***/ }),
 
@@ -394,18 +394,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommentComponent", function() { return CommentComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
-/* harmony import */ var _post_comment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../post-comment */ "./src/app/post-comment.ts");
+/* harmony import */ var _timeline_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../timeline.service */ "./src/app/timeline.service.ts");
+/* harmony import */ var _post_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../post-comment */ "./src/app/post-comment.ts");
+
 
 
 
 var CommentComponent = /** @class */ (function () {
-    function CommentComponent() {
+    function CommentComponent(timelineService) {
+        this.timelineService = timelineService;
     }
     CommentComponent.prototype.ngOnInit = function () {
     };
+    CommentComponent.prototype.deleteComment = function () {
+        this.timelineService.deleteComment(this.comment.id)
+            .subscribe(function () { }, function (err) {
+            console.log(err);
+        });
+    };
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _post_comment__WEBPACK_IMPORTED_MODULE_2__["Comment"])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _post_comment__WEBPACK_IMPORTED_MODULE_3__["Comment"])
     ], CommentComponent.prototype, "comment", void 0);
     CommentComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
@@ -413,7 +422,7 @@ var CommentComponent = /** @class */ (function () {
             template: __webpack_require__(/*! ./comment.component.html */ "./src/app/comment/comment.component.html"),
             styles: [__webpack_require__(/*! ./comment.component.scss */ "./src/app/comment/comment.component.scss")]
         }),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_timeline_service__WEBPACK_IMPORTED_MODULE_2__["TimelineService"]])
     ], CommentComponent);
     return CommentComponent;
 }());
@@ -759,7 +768,6 @@ var PostComponent = /** @class */ (function () {
         });
     };
     PostComponent.prototype.deletePost = function () {
-        console.log('delete');
         this.timelineService.deletePost(this.post.id)
             .subscribe(function () { }, function (err) {
             console.log(err);
@@ -987,6 +995,44 @@ var TimelineService = /** @class */ (function () {
                     // emits updated list of posts as a copy of dataStore via _posts Subject
                     _this._posts.next(Object.assign({}, _this.dataStore).posts);
                     break;
+                case 'addedTo':
+                    // updates dataStore post comments with new comment
+                    _this.dataStore.posts.map(function (post) {
+                        if (post.id === resp.id) {
+                            post.comments.unshift(resp.added);
+                        }
+                    });
+                    // emits updated list of posts as a copy of dataStore via _posts Subject
+                    _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                    break;
+                case 'destroyed':
+                    // check if destroyed post is in posts before comment toggle
+                    var idx = _this.dataStore.posts.findIndex(function (p) { return p.id === p.id; });
+                    if (idx > -1) {
+                        // remove from posts if present and update components
+                        _this.dataStore.posts.splice(idx, 1);
+                        _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                    }
+                    else {
+                        /* if destroyed event reaches client before create then might need to check idx and
+                        store if not found in defPosts to discard create when and if received */
+                        console.log("destroy event received for post that doesn't exist");
+                    }
+                    break;
+                case 'removedFrom':
+                    var postIdx = _this.dataStore.posts.findIndex(function (p) { return p.id === resp.id; });
+                    var commIdx = void 0;
+                    if (postIdx > -1) {
+                        commIdx = _this.dataStore.posts[postIdx].comments.findIndex(function (c) { return c.id === resp.removedId; });
+                        _this.dataStore.posts[postIdx].comments.splice(commIdx, 1);
+                        _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                    }
+                    else {
+                        /* if destroyed event reaches client before create then might need to check idx and
+                        store if not found in defPosts to discard create event when and if received */
+                        console.log("removedFrom event received for post that doesn't exist");
+                    }
+                    break;
                 default:
                     // unhandled event verb
                     console.log('unhandled event verb');
@@ -1051,6 +1097,39 @@ var TimelineService = /** @class */ (function () {
                         // emits updated list of posts as a copy of dataStore via _posts Subject
                         _this._posts.next(Object.assign({}, _this.dataStore).posts);
                         break;
+                    case 'destroyed':
+                        // check if destroyed post is in posts before comment toggle
+                        var idx = _this.dataStore.posts.findIndex(function (p) { return p.id === resp.id; });
+                        if (idx > -1) {
+                            // remove from posts if present and update components
+                            _this.dataStore.posts.splice(idx, 1);
+                            _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                        }
+                        else {
+                            // if idx is -1 then post id must be in deferred posts remove update components
+                            idx = _this.dataStore.defPosts.findIndex(function (p) { return p.id === resp.id; });
+                            /* if destroyed event reaches client before create then might need to check idx and
+                            store if not found in defPosts to discard create when and if received */
+                            _this.dataStore.defPosts.splice(idx, 1);
+                            _this._defPosts.next(Object.assign({}, _this.dataStore).defPosts.length);
+                        }
+                        break;
+                    case 'removedFrom':
+                        var postIdx = _this.dataStore.posts.findIndex(function (p) { return p.id === resp.id; });
+                        var commIdx = void 0;
+                        if (postIdx > -1) {
+                            commIdx = _this.dataStore.posts[postIdx].comments.findIndex(function (c) { return c.id === resp.removedId; });
+                            _this.dataStore.posts[postIdx].comments.splice(commIdx, 1);
+                            _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                        }
+                        else {
+                            postIdx = _this.dataStore.defPosts.findIndex(function (p) { return p.id === resp.id; });
+                            /* if destroyed event reaches client before create then might need to check idx and
+                            store if not found in defPosts to discard create event when and if received */
+                            commIdx = _this.dataStore.defPosts[postIdx].comments.findIndex(function (c) { return c.id === resp.removedId; });
+                            _this.dataStore.defPosts[postIdx].comments.splice(commIdx, 1);
+                        }
+                        break;
                     default:
                         // unhandled event verb
                         console.log('unhandled event verb');
@@ -1113,6 +1192,22 @@ var TimelineService = /** @class */ (function () {
                 _this._posts.next(Object.assign({}, _this.dataStore).posts);
                 observer.next(resp.status);
                 observer.complete();
+            }, function (err) { return observer.error(err); });
+        });
+    };
+    TimelineService.prototype.deleteComment = function (id) {
+        var _this = this;
+        return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (observer) {
+            _this.sails.delete('/comment/' + id)
+                .subscribe(function (resp) {
+                var postIdx = _this.dataStore.posts.findIndex(function (p) { return p.id === resp.data.post; });
+                var commIdx;
+                if (postIdx > -1) {
+                    commIdx = _this.dataStore.posts[postIdx].comments.findIndex(function (c) { return c.id === resp.data.comment; });
+                    _this.dataStore.posts[postIdx].comments.splice(commIdx, 1);
+                    _this._posts.next(Object.assign({}, _this.dataStore).posts);
+                    observer.complete();
+                }
             }, function (err) { return observer.error(err); });
         });
     };
