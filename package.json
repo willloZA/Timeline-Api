@@ -1,7 +1,7 @@
 {
-  "name": "timeline-test-api",
+  "name": "timeline-api",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "a Sails application",
   "keywords": [],
   "dependencies": {
@@ -34,8 +34,8 @@
   "main": "app.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/kowkemon/timeline-test-api.git"
+    "url": "git://github.com/willloZA/Timeline-Api.git"
   },
-  "author": "kowkemon",
+  "author": "lloyd Williams",
   "license": ""
 }
