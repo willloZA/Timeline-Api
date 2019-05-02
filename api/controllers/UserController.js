@@ -51,9 +51,10 @@ module.exports = {
       req.session.me = user.id;
       sails.hooks.filter.user(user);
       console.log(`User ${user.firstName} created!`)
-      return res.ok({ user: user, message:'Signup successful!' });
+      return res.ok({ user: user, message:'Signup successful' });
     })
     .catch((err) => {
+      console.error(err);
       return res.negotiate(err);
     });
   }

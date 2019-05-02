@@ -21,10 +21,10 @@ module.exports = function login(inputs) {
         password: inputs.password
     }, function (err, user) {
         if (err) {
-            console.log('error',err)
+            console.error('error',err)
             return res.negotiate(err);
         } else if (!user) {
-            console.log('invalid')
+            console.error('invalid')
             return res.badRequest('Invalid email/password combination.');
         } else {
             sails.hooks.filter.user(user);

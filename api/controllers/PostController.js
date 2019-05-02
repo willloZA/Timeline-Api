@@ -8,7 +8,7 @@
 module.exports = {
 	getPosts: function (req, res) {
         if (!req.isSocket) {
-            console.log('http rejected');
+            console.error('http rejected');
             return res.badRequest();
         }
         console.log('getting posts');
@@ -47,26 +47,25 @@ module.exports = {
                     res.json(resp);
                 })
                 .catch((err) => {
-                    console.log(err);
+                    console.error(err);
                     res.negotiate(err);
                 });
-                // res.json(postArr);
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 res.negotiate(err);
             });
     },
     createPost: function (req, res) {
         console.log('post create: ', req.params.all());
         if (!req.isSocket) {
-            console.log('http rejected');
+            console.error('http rejected');
             return res.badRequest();
         }
 
         //test via policy if logged in and user id provided with post matches req.session id
         if (req.params.all().user !== req.session.me) {
-            console.log(`${req.session.me} attempted to create post using user id ${req.params.all().user}`);
+            console.error(`${req.session.me} attempted to create post using user id ${req.params.all().user}`);
                 res.forbidden({ message: 'create post failed: Incorrect user Id'});
         }
 
@@ -80,19 +79,19 @@ module.exports = {
                         res.created(post);
                     })
                     .catch((err) => {
-                        console.log(err);
+                        console.error(err);
                         res.negotiate(err);
                     });
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 res.negotiate(err);
             });
     },
 
     deletePost: function (req, res) {
         if (!req.isSocket) {
-            console.log('http rejected');
+            console.error('http rejected');
             return res.badRequest();
         }
 
@@ -101,7 +100,6 @@ module.exports = {
                 if (post.user === req.session.me) {
                     Post.destroy({ id:req.param('id') })
                         .then((delPostArr) => {
-                            console.log(delPostArr);
                             Post.publishDestroy(delPostArr[0].id, req);
                             Comment.destroy({ post: delPostArr[0].id })
                                 .then((delCommentArr) => {
@@ -109,22 +107,22 @@ module.exports = {
                                     res.ok({ message: `post and comments deleted`});
                                 })
                                 .catch((err) => {
-                                    console.log(`Error removing comments after removing post ${err}`)
+                                    console.error(`Error removing comments removing comments from post ${err}`)
                                     res.ok({ message: `post deleted`});
                                 });
                         })
                         .catch((err) => {
-                            console.log(err);
+                            console.error(err);
                             res.negotiate(err);
                         });
                         
                 } else {
-                    console.log(`${req.session.me} attempted to delete post ${req.param('id')} that isn't theirs`)
+                    console.error(`${req.session.me} attempted to delete post ${req.param('id')} that isn't theirs`)
                     res.forbidden({ message: `failed to delete post`});
                 }
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 res.negotiate(err);
             });
     }

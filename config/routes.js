@@ -33,14 +33,16 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/timeline': '/',
-  'get /post': 'PostController.getPosts',
-  'post /post': 'PostController.createPost',
-  'delete /post/:id': 'PostController.deletePost',
-  'post /comment': 'CommentController.createComment',
-  'delete /comment/:id': 'CommentController.deleteComment',
-  'post /login': 'UserController.login',
-  'post /signup': 'UserController.signup',
-  '/logout': 'UserController.logout'
+  '/signup': '/',
+  '/login': '/',
+  'get /api/post': 'PostController.getPosts',
+  'post /api/post': 'PostController.createPost',
+  'delete /api/post/:id': 'PostController.deletePost',
+  'post /api/comment': 'CommentController.createComment',
+  'delete /api/comment/:id': 'CommentController.deleteComment',
+  'post /api/login': 'UserController.login',
+  'post /api/signup': 'UserController.signup',
+  '/api/logout': 'UserController.logout'
 
   /***************************************************************************
   *                                                                          *

@@ -76,8 +76,6 @@ module.exports = {
             .then((resp) => {
               //see toJSON
               delete user.password;
-              console.log(user);
-              console.log(resp);
               //if matching password return user, else return false as error
               if (resp) {
                 console.log('matched')

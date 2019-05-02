@@ -9,13 +9,13 @@ module.exports = {
     createComment: function (req, res) {
         console.log('comment create', req.params.all());
         if (!req.isSocket) {
-            console.log('http rejected');
+            console.error('http rejected');
             return res.badRequest();
         }
 
         //test via policy if logged in and user id provided with post matches req.session id
         if (req.params.all().user !== req.session.me) {
-            console.log(`${req.session.me} attempted to create comment using user id ${req.params.all().user}`);
+            console.error(`${req.session.me} attempted to create comment using user id ${req.params.all().user}`);
                 res.forbidden({ message: 'create comment failed: Incorrect user Id'});
         }
 
@@ -30,19 +30,19 @@ module.exports = {
                         res.created(comment);
                     })
                     .catch((err) => {
-                        console.log(err);
+                        console.error(err);
                         res.negotiate(err);
                     });
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 res.negotiate(err);
             });
     },
     
     deleteComment: function (req, res) {
         if (!req.isSocket) {
-            console.log('http rejected');
+            console.error('http rejected');
             return res.badRequest();
         }
 
@@ -58,17 +58,17 @@ module.exports = {
                                 message: `comment deleted`});
                         })
                         .catch((err) => {
-                            console.log(err);
+                            console.error(err);
                             res.negotiate(err);
                         });
                         
                 } else {
-                    console.log(`${req.session.me} attempted to delete Comment ${req.param('id')} that isn't theirs`)
+                    console.error(`${req.session.me} attempted to delete Comment ${req.param('id')} that isn't theirs`)
                     res.forbidden({ message: `failed to delete Comment`});
                 }
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 res.negotiate(err);
             });
     }
