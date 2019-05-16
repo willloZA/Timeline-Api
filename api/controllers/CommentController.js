@@ -8,16 +8,6 @@
 module.exports = {
     createComment: function (req, res) {
         console.log('comment create', req.params.all());
-        if (!req.isSocket) {
-            console.error('http rejected');
-            return res.badRequest();
-        }
-
-        //test via policy if logged in and user id provided with post matches req.session id
-        if (req.params.all().user !== req.session.me) {
-            console.error(`${req.session.me} attempted to create comment using user id ${req.params.all().user}`);
-                res.forbidden({ message: 'create comment failed: Incorrect user Id'});
-        }
 
         Comment.create(req.params.all())
             .then((newComment) => {
@@ -41,31 +31,13 @@ module.exports = {
     },
     
     deleteComment: function (req, res) {
-        if (!req.isSocket) {
-            console.error('http rejected');
-            return res.badRequest();
-        }
-
-        Comment.findOne({ id:req.param('id') })
-            .then((comment) => {
-                if (comment.user === req.session.me) {
-                    Comment.destroy({ id:req.param('id') })
-                        .then((delCommentArr) => {
-                            Post.publishRemove(delCommentArr[0].post, 'comments', delCommentArr[0].id, req);
-                            res.ok({ 
-                                post: delCommentArr[0].post,
-                                comment: delCommentArr[0].id,
-                                message: `comment deleted`});
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                            res.negotiate(err);
-                        });
-                        
-                } else {
-                    console.error(`${req.session.me} attempted to delete Comment ${req.param('id')} that isn't theirs`)
-                    res.forbidden({ message: `failed to delete Comment`});
-                }
+        Comment.destroy({ id:req.param('id') })
+            .then((delCommentArr) => {
+                Post.publishRemove(delCommentArr[0].post, 'comments', delCommentArr[0].id, req);
+                res.ok({ 
+                    post: delCommentArr[0].post,
+                    comment: delCommentArr[0].id,
+                    message: `comment deleted`});
             })
             .catch((err) => {
                 console.error(err);

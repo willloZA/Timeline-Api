@@ -7,10 +7,6 @@
 
 module.exports = {
 	getPosts: function (req, res) {
-        if (!req.isSocket) {
-            console.error('http rejected');
-            return res.badRequest();
-        }
         console.log('getting posts');
         Post.find()
             .populateAll()
@@ -58,16 +54,6 @@ module.exports = {
     },
     createPost: function (req, res) {
         console.log('post create: ', req.params.all());
-        if (!req.isSocket) {
-            console.error('http rejected');
-            return res.badRequest();
-        }
-
-        //test via policy if logged in and user id provided with post matches req.session id
-        if (req.params.all().user !== req.session.me) {
-            console.error(`${req.session.me} attempted to create post using user id ${req.params.all().user}`);
-                res.forbidden({ message: 'create post failed: Incorrect user Id'});
-        }
 
         Post.create(req.params.all())
             .then((newPost) => {
@@ -90,36 +76,19 @@ module.exports = {
     },
 
     deletePost: function (req, res) {
-        if (!req.isSocket) {
-            console.error('http rejected');
-            return res.badRequest();
-        }
 
-        Post.findOne({ id:req.param('id') })
-            .then((post) => {
-                if (post.user === req.session.me) {
-                    Post.destroy({ id:req.param('id') })
-                        .then((delPostArr) => {
-                            Post.publishDestroy(delPostArr[0].id, req);
-                            Comment.destroy({ post: delPostArr[0].id })
-                                .then((delCommentArr) => {
-                                    console.log(`Post ${delPostArr[0].id} and ${delCommentArr.length} comments deleted`);
-                                    res.ok({ message: `post and comments deleted`});
-                                })
-                                .catch((err) => {
-                                    console.error(`Error removing comments removing comments from post ${err}`)
-                                    res.ok({ message: `post deleted`});
-                                });
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                            res.negotiate(err);
-                        });
-                        
-                } else {
-                    console.error(`${req.session.me} attempted to delete post ${req.param('id')} that isn't theirs`)
-                    res.forbidden({ message: `failed to delete post`});
-                }
+        Post.destroy({ id:req.param('id') })
+            .then((delPostArr) => {
+                Post.publishDestroy(delPostArr[0].id, req);
+                Comment.destroy({ post: delPostArr[0].id })
+                    .then((delCommentArr) => {
+                        console.log(`Post ${delPostArr[0].id} and ${delCommentArr.length} comments deleted`);
+                        res.ok({ message: `post and comments deleted`});
+                    })
+                    .catch((err) => {
+                        console.error(`Error removing comments removing comments from post ${err}`)
+                        res.ok({ message: `post deleted`});
+                    });
             })
             .catch((err) => {
                 console.error(err);
