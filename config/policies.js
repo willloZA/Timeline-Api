@@ -61,6 +61,7 @@ module.exports.policies = {
   },
 
   UserController: {
-    logout: 'isLoggedIn'
+    logout: 'isLoggedIn',
+    test: 'isLoggedIn'
   }
 };

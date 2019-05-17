@@ -13,7 +13,7 @@ module.exports = {
    * `UserController.login()`
    */
   login: function (req, res) {
-    console.log(req.session)
+    sails.log(req.session)
     if (req.session && req.session.me) {
       console.log('session exists')
       return res.ok({ message: `already logged in`})
@@ -22,6 +22,18 @@ module.exports = {
         email   : req.param('email'),
         password: req.param('password')
       });
+    }
+  },
+
+  /**
+   * `UserController.test()`
+   */
+  test: function (req, res) {
+    // should be policy?
+    if (req.session.me === req.param('id')) {
+      return res.ok({ message: `already logged in`})
+    } else {
+      return res.forbidden
     }
   },
 

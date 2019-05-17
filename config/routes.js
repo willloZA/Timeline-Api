@@ -41,6 +41,7 @@ module.exports.routes = {
   'post /api/comment': 'CommentController.createComment',
   'delete /api/comment/:id': 'CommentController.deleteComment',
   'post /api/login': 'UserController.login',
+  'post /api/test': 'UserController.test',
   'post /api/signup': 'UserController.signup',
   '/api/logout': 'UserController.logout'
 
