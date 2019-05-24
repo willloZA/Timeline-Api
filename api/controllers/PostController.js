@@ -10,7 +10,7 @@ module.exports = {
         console.log('getting posts');
         Post.getTimeline()
             .then(function(respArr) {
-                sails.log(respArr[0]);
+                // sails.log(respArr[0]);
                 Post.watch(req);
                 Post.subscribe(req, respArr[1]);
                 res.json(respArr[0]);
