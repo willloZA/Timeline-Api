@@ -8,49 +8,63 @@
 module.exports = {
 	getPosts: function (req, res) {
         console.log('getting posts');
-        Post.find()
-            .populateAll()
-            .then((postArr) => {
-                /* generate array of comment arrays to associated with postArr 
-                Promise.all should maintain order of comment arrays*/
-                Promise.all(
-                    /* generate array of promises to be returned by Promise.all */ 
-                    postArr.map((post) => {
-                        return Comment.find({ 
-                            where: { post: post.id },
-                            sort: 'createdAt DESC'
-                        }).populate('user');
-                    })
-                )
-                .then((commentArr) => {
-                    let resp = [];
-                    let postIds = [];
-                    commentArr.map((arr) => {
-                        arr.map((comm) => {
-                            sails.hooks.filter.user(comm);
-                            return comm;
-                        });
-                        return arr;
-                    });
-                    postArr.forEach((post, idx) => {
-                        sails.hooks.filter.user(post);
-                        post.comments = commentArr[idx];
-                        resp.push(post);
-                        postIds.push(post.id);
-                    });
-                    Post.watch(req);
-                    Post.subscribe(req, postIds);
-                    res.json(resp);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    res.negotiate(err);
-                });
+        Post.getTimeline()
+            .then(function(respArr) {
+                // sails.log(respArr[0]);
+                Post.watch(req);
+                Post.subscribe(req, respArr[1]);
+                res.json(respArr[0]);
             })
-            .catch((err) => {
-                console.error(err);
+            .catch(function(err) {
+                sails.error(err);
                 res.negotiate(err);
             });
+        // Post.find()
+        //     .populateAll()
+        //     .then((postArr) => {
+        //         /* loop through postArr.comments[idx] and populate each user from id
+        //         |* instead of below solution, move into Post model as a custom getAll method too */
+        //         /* generate array of comment arrays to associated with postArr 
+        //         Promise.all should maintain order of comment arrays*/
+        //         Promise.all(
+        //             /* generate array of promises to be returned by Promise.all */ 
+        //             postArr.map((post) => {
+        //                 return Comment.find({ 
+        //                     where: { post: post.id },
+        //                     sort: 'createdAt DESC'
+        //                 }).populate('user');
+        //             })
+        //         )
+        //         .then((commentArr) => {
+        //             let resp = [];
+        //             let postIds = [];
+        //             commentArr.map((arr) => {
+        //                 arr.map((comm) => {
+        //                     sails.hooks.filter.user(comm);
+        //                     return comm;
+        //                 });
+        //                 return arr;
+        //             });
+        //             sails.log(postArr);
+        //             postArr.forEach((post, idx) => {
+        //                 sails.hooks.filter.user(post);
+        //                 post.comments = commentArr[idx];
+        //                 resp.push(post);
+        //                 postIds.push(post.id);
+        //             });
+        //             Post.watch(req);
+        //             Post.subscribe(req, postIds);
+        //             res.json(resp);
+        //         })
+        //         .catch((err) => {
+        //             console.error(err);
+        //             res.negotiate(err);
+        //         });
+        //     })
+        //     .catch((err) => {
+        //         console.error(err);
+        //         res.negotiate(err);
+        //     });
     },
     createPost: function (req, res) {
         console.log('post create: ', req.params.all());
