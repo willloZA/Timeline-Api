@@ -6,7 +6,7 @@
  */
 
 module.exports = {
-    createComment: function (req, res) {
+    create: function (req, res) {
         console.log('comment create', req.params.all());
 
         Comment.create(req.params.all())
@@ -30,7 +30,7 @@ module.exports = {
             });
     },
     
-    deleteComment: function (req, res) {
+    destroy: function (req, res) {
         Comment.destroy({ id:req.param('id') })
             .then((delCommentArr) => {
                 Post.publishRemove(delCommentArr[0].post, 'comments', delCommentArr[0].id, req);

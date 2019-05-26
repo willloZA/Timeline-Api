@@ -50,14 +50,16 @@ module.exports.policies = {
   // }
   
   PostController: {
-    createPost: ['isLoggedIn', 'isSocket', 'verifyCreate'],
-    deletePost: ['isLoggedIn', 'isSocket', 'verifyDelete'],
-    getPosts: [true, 'isSocket']
+    '*': false,
+    find: [true, 'isSocket'],
+    create: ['isLoggedIn', 'isSocket', 'verifyCreate'],
+    destroy: ['isLoggedIn', 'isSocket', 'verifyDelete']
   },
 
   CommentController: {
-    createComment: ['isLoggedIn', 'isSocket', 'verifyCreate'],
-    deleteComment: ['isLoggedIn', 'isSocket', 'verifyDelete']
+    '*': false,
+    create: ['isLoggedIn', 'isSocket', 'verifyCreate'],
+    destroy: ['isLoggedIn', 'isSocket', 'verifyDelete']
   },
 
   UserController: {

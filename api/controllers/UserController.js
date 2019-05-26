@@ -6,7 +6,9 @@
  */
 
 module.exports = {
-	
+	_config: {
+    rest: false
+  },
 
 
   /**
@@ -33,7 +35,9 @@ module.exports = {
     if (req.session.me === req.param('id')) {
       return res.ok({ message: `already logged in`})
     } else {
-      return res.forbidden
+      // clear session and return 403
+      req.session.me = null;
+      return res.forbidden('not logged in')
     }
   },
 

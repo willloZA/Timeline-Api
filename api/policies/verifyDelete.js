@@ -6,12 +6,11 @@
  * @docs        :: http://sailsjs.org/#!/documentation/concepts/Policies
  *
  */
-module.exports = function(req, res, next) {
-
+    module.exports = function(req, res, next) {
     // if deleting post and post user matches req.session or if deleting comment
     // and comment user matches req.session, proceed to the next policy, 
     // or if this is the last policy, the controller
-    if (req.route.path === '/api/post/:id') {
+    if (req.route.path === '/api/post/:id?') {
         Post.findOne({ id:req.param('id') })
             .then((post) => {
                 // potential policy?
@@ -28,7 +27,7 @@ module.exports = function(req, res, next) {
                 console.error(err);
                 return res.negotiate(err);
             });
-    } else if (req.route.path === '/api/comment/:id') {
+    } else if (req.route.path === '/api/comment/:id?') {
         Comment.findOne({ id:req.param('id') })
             .then((comment) => {
                 if (comment.user === req.session.me) {
@@ -41,8 +40,10 @@ module.exports = function(req, res, next) {
                 }
             })
             .catch((err) => {
-                sails.error(err);
+                sails.log.error(err);
                 return res.negotiate(err);
             });
+    } else {
+        return res.notFound('delete path not recognised: ' + req.route.path);
     }
   };
